@@ -1,0 +1,69 @@
+---
+title: "Анализ поведения схожих критериев"
+author: "Шадриков А. А."
+date: "28.09.2014"
+output: html_document
+---
+
+Задаём параметры экспериментов:
+```{r}
+m1 = 0
+s1 = 1
+m2 = 0
+s2 = seq(0.5, 2, 0.01)
+n = 5:50
+nexp = 5
+
+#x <- sapply(s2, function(s) sapply(n, function(c) cbind(rnorm(c, m1, s1), rnorm(c, m2, s2))))
+```
+
+Определим функцию, которая по выборкам возвращает результаты тестов:
+```{r}
+my_test <- function(c, s){
+  x1 <- rnorm(c, m1, s1)
+  x2 <- rnorm(c, m2, s)
+  r1 <- var.test(x1, x2)$p.value
+  p1 <- runif(1) > r1
+  r2 <- ansari.test(x1, x2)$p.value
+  p2 <- runif(1) > r2
+  return(c(r1, r2, p1, p2))
+}
+```
+
+А также функцию, усредняющую результаты экспериментов:
+```{r}
+test_mean <- function(c, s, nexp){
+  r <- replicate(nexp, my_test(c, s))
+  return(apply(r, 1, mean))
+}
+```
+
+Проводим эксперименты:
+```{r}
+r_once <- matrix(unlist(lapply(s2, function(s) lapply(n, function(c) test_mean(c, s, 1)))), nrow=4)
+r1_once = matrix(r_once[1,], nrow=length(s2))
+r2_once = matrix(r_once[2,], nrow=length(s2))
+p1_once = matrix(r_once[3,], nrow=length(s2))
+p2_once = matrix(r_once[4,], nrow=length(s2))
+r <- matrix(unlist(lapply(s2, function(s) lapply(n, function(c) test_mean(c, s, nexp)))), nrow=4)
+r1 = matrix(r[1,], nrow=length(s2))
+r2 = matrix(r[2,], nrow=length(s2))
+p1 = matrix(r[3,], nrow=length(s2))
+p2 = matrix(r[4,], nrow=length(s2))
+```
+
+Результаты экспериментов:
+
+```{r, echo=FALSE}
+library(package = "lattice")
+
+grid <- expand.grid(x=n, y=s2)
+levelplot(r1_once~x*y, grid, xlab="n", ylab="sigma_2", main="p-value for one experiment with Fisher test", caption="MY")
+
+levelplot(r1~x*y, grid, xlab="n", ylab="sigma_2", main="p-value for Fisher test (mean for 1000 experiments)")
+levelplot(r2~x*y, grid, xlab="n", ylab="sigma_2", main="p-value for Ansari-Bradley test (mean for 1000 experiments)")
+
+
+levelplot(p1~x*y, grid, xlab="n", ylab="sigma_2", main="Power estimates for AFisher test")
+levelplot(p2~x*y, grid, xlab="n", ylab="sigma_2", main="Power estimates for Ansari-Bradley test")
+```

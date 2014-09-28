@@ -12,7 +12,7 @@ s1 = 1
 m2 = 0
 s2 = seq(0.5, 2, 0.01)
 n = 5:50
-nexp = 1000
+nexp = 300
 ```
 
 Определим функцию, которая по выборкам возвращает результаты тестов:
@@ -32,7 +32,7 @@ my_test <- function(c, s){
 ```{r}
 test_mean <- function(c, s, nexp){
   r <- replicate(nexp, my_test(c, s))
-  return(apply(r, 1, mean))
+  return(apply(r, 100, mean))
 }
 ```
 
@@ -58,8 +58,8 @@ library(package = "lattice")
 grid <- expand.grid(x=n, y=s2)
 levelplot(r1_once~x*y, grid, xlab="n", ylab="sigma_2", main="p-value for one experiment with Fisher test", caption="MY")
 
-levelplot(r1~x*y, grid, xlab="n", ylab="sigma_2", main="p-value for Fisher test (mean for 1000 experiments)")
-levelplot(r2~x*y, grid, xlab="n", ylab="sigma_2", main="p-value for Ansari-Bradley test (mean for 1000 experiments)")
+levelplot(r1~x*y, grid, xlab="n", ylab="sigma_2", main="p-value for Fisher test (mean for 100 experiments)")
+levelplot(r2~x*y, grid, xlab="n", ylab="sigma_2", main="p-value for Ansari-Bradley test (mean for 100 experiments)")
 
 
 levelplot(p1~x*y, grid, xlab="n", ylab="sigma_2", main="Power estimates for AFisher test")
